@@ -18,7 +18,7 @@ client = OpenAI(
     base_url="https://openrouter.ai/api/v1"
 ) 
 
-MODEL = "inclusionai/ling-3.0-flash-vl:free"
+MODEL = "nvidia/nemotron-3.5-lightning:free"
 
 SYSTEM_PROMPT = """You are a coding agent running in the user's terminal.
 You can list files, read files, write files, and run shell commands.
