@@ -1,11 +1,10 @@
 from openai import OpenAI
 from pathlib import Path
 import json 
+from dotenv import load_dotenv 
 import os
 
-from pydantic import with_config
-
-# Read .env manually
+#Read .env manually
 env_file = Path(__file__).parent / ".env"
 with open(env_file) as f:
     for line in f:
