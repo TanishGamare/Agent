@@ -8,6 +8,14 @@ A collection of lightweight terminal-based agents powered by OpenRouter.
 2. Install dependencies with `pip install openai` or You can use uv too.
 3. Create a `.env` file in the project root and add your key:
 
+## Environment Variables
+
+By default both agents load the `.env` file manually using `pathlib`. If you prefer `python-dotenv`, install it and replace the loader block in either script with:
+
+```python
+from dotenv import load_dotenv
+load_dotenv()
+```
 
 ## Agents
 
