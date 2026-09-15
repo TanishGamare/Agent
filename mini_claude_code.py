@@ -1,5 +1,6 @@
 from openai import OpenAI
 from pathlib import Path
+import json 
 import os
 
 from pydantic import with_config
@@ -18,22 +19,58 @@ client = OpenAI(
     base_url="https://openrouter.ai/api/v1"
 )
 
-messages = []
+def read_file(path):
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return f"File {path} not found"
+TOOL_SCHEMAS = [
+        {
+            "type": "function",
+            "function": {
+                "name": "read_file",
+                "description": "Read a text file and return its contents.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "path": {"type": "string", "description": "path of the file to read"},
+                        },
+                        "required": ["path"],
+                    },
+                },
+            },
+        ]
+
+messages = [
+        {"role": "user", "content": "what is inside notes.text? summarize it in one line"},
+        ]
 
 while True:
-    user_input = input("You: ")
-    if user_input.strip().lower() in ("exit", "quit"):
-        break
-
-    messages.append({"role": "user", "content": user_input})
-
-
     response = client.chat.completions.create(
         model="nvidia/nemotron-3.5-lightning:free",
-        messages=messages, 
+        messages=messages,
+        tools=TOOL_SCHEMAS,
     )
+    
+    message = response.choices[0].message
+    messages.append(message)
+    
+    # NO tool call means the model is done 
 
-    reply = response.choices[0].message.content
-    messages.append({"role": "assistant", "content": reply})
-    print("Bot:", reply)
+    if not message.tool_calls:
+        print(message.content)
+        break
+
+    for tool_call in message.tool_calls:
+        args = json.loads(tool_call.function.arguments)
+        print(f"Model wants to run: read_file({args})")
+
+        result = read_file(**args)
+
+        messages.append({
+            "role": "tool",
+            "tool_call_id": tool_call.id,
+            "content": result,
+            })
 
